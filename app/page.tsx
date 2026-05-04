@@ -6,6 +6,7 @@ import Education from "@/components/education";
 import Experience from "@/components/experience";
 import Hero from "@/components/hero";
 import Projects from "@/components/projects";
+import SkillsDashboard from "@/components/skills-dashboard";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -21,6 +22,7 @@ export default function Home() {
       <About />
       <CodingActivity />
       <Experience />
+      <SkillsDashboard />
       <Projects />
       <Education />
       <Blog />
