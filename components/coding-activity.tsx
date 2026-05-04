@@ -63,6 +63,7 @@ export default function CodingActivity() {
   const GITHUB_USERNAME = "udayrajvadeghar";
   const CODEFORCES_HANDLE = "uday";
   const LEETCODE_USERNAME = "_UdayRaj_";
+  const LEETCODE_API_BASE = "https://leetcode-api-cyan.vercel.app";
 
   const platforms = [
     { name: "GitHub" },
@@ -110,19 +111,29 @@ export default function CodingActivity() {
   }): ContributionDay[] => {
     if (!submissionCalendar) return [];
 
+    // API keys are Unix timestamps; normalize them into YYYY-MM-DD first.
+    const countByDate: Record<string, number> = {};
+    Object.entries(submissionCalendar).forEach(([timestamp, count]) => {
+      const parsedTs = Number(timestamp);
+      if (!Number.isNaN(parsedTs)) {
+        const date = new Date(parsedTs * 1000).toISOString().split("T")[0];
+        countByDate[date] = (countByDate[date] || 0) + (count || 0);
+      }
+    });
+
     const result: ContributionDay[] = [];
     const today = new Date();
     const oneYearAgo = new Date(today);
     oneYearAgo.setFullYear(today.getFullYear() - 1);
 
     for (let d = new Date(oneYearAgo); d <= today; d.setDate(d.getDate() + 1)) {
-      const timestamp = Math.floor(d.getTime() / 1000).toString();
-      const count = submissionCalendar[timestamp] || 0;
+      const dateStr = d.toISOString().split("T")[0];
+      const count = countByDate[dateStr] || 0;
       const level =
         count === 0 ? 0 : count <= 2 ? 1 : count <= 4 ? 2 : count <= 6 ? 3 : 4;
 
       result.push({
-        date: d.toISOString().split("T")[0],
+        date: dateStr,
         count,
         level,
       });
@@ -187,19 +198,47 @@ export default function CodingActivity() {
           setCfSubmissions(processedSubmissions);
         }
 
-        // Fetch LeetCode data
-        const lcResponse = await fetch(
-          `https://leetcode-api-faisalshohag.vercel.app/${LEETCODE_USERNAME}`
-        );
-        const lcJson = await lcResponse.json();
+        // Fetch LeetCode data from alfa-leetcode-api mirror
+        const [lcProfileResponse, lcSolvedResponse, lcCalendarResponse] =
+          await Promise.all([
+            fetch(`${LEETCODE_API_BASE}/${LEETCODE_USERNAME}`),
+            fetch(`${LEETCODE_API_BASE}/${LEETCODE_USERNAME}/solved`),
+            fetch(`${LEETCODE_API_BASE}/${LEETCODE_USERNAME}/calendar`),
+          ]);
+
+        const [lcProfileJson, lcSolvedJson, lcCalendarJson] = await Promise.all([
+          lcProfileResponse.json(),
+          lcSolvedResponse.json(),
+          lcCalendarResponse.json(),
+        ]);
+
+        // submissionCalendar comes as a stringified JSON map from this API.
+        let parsedCalendar: { [timestamp: string]: number } = {};
+        if (typeof lcCalendarJson?.submissionCalendar === "string") {
+          try {
+            parsedCalendar = JSON.parse(lcCalendarJson.submissionCalendar);
+          } catch {
+            parsedCalendar = {};
+          }
+        } else if (
+          lcCalendarJson?.submissionCalendar &&
+          typeof lcCalendarJson.submissionCalendar === "object"
+        ) {
+          parsedCalendar = lcCalendarJson.submissionCalendar;
+        }
+
         setLeetcodeData({
-          totalSolved: lcJson.totalSolved || 0,
-          totalQuestions: lcJson.totalQuestions || 0,
-          easySolved: lcJson.easySolved || 0,
-          mediumSolved: lcJson.mediumSolved || 0,
-          hardSolved: lcJson.hardSolved || 0,
-          ranking: lcJson.ranking || 0,
-          submissionCalendar: lcJson.submissionCalendar || {},
+          totalSolved: lcSolvedJson?.solvedProblem || 0,
+          totalQuestions:
+            lcSolvedJson?.totalSubmissionNum?.find(
+              (item: { difficulty?: string; count?: number }) =>
+                item?.difficulty === "All"
+            )?.count || 0,
+          easySolved: lcSolvedJson?.easySolved || 0,
+          mediumSolved: lcSolvedJson?.mediumSolved || 0,
+          hardSolved: lcSolvedJson?.hardSolved || 0,
+          ranking: lcProfileJson?.ranking || 0,
+          submissionCalendar: parsedCalendar,
         });
       } catch (error) {
         console.error("Error fetching coding stats:", error);
@@ -254,7 +293,7 @@ export default function CodingActivity() {
 
     const getLevelColor = (level: number) => {
       const colors = [
-        "bg-muted/30",
+        "bg-muted/40 border border-border/60",
         "bg-[#ea580c]/30",
         "bg-[#ea580c]/50",
         "bg-[#ea580c]/70",

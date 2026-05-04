@@ -5,14 +5,23 @@ import Skills from "./skills-content";
 export default function Experience() {
   const experiences = [
     {
+      title: "Software Development Engineer I",
+      company: "Amazon",
+      roleNote: "Full-time",
+      period: "May 2026 - Present",
+      relative: "Current",
+      location: "On-site",
+      achievements: ["Working as a Software Engineer at Amazon."],
+    },
+    {
       title: "Software Engineer",
       company: "WNS",
       roleNote: "Full-time",
-      period: "Jun 2025 - Present",
-      relative: "5 mos",
+      period: "Jun 2025 - Apr 2026",
+      relative: "11 mos",
       location: "On-site",
       achievements: [
-        "Currently Working as a Software Engineer building scalable business solutions.",
+        "Worked as a Software Engineer building scalable business solutions.",
       ],
     },
     {
@@ -98,7 +107,9 @@ export default function Experience() {
                         <h3 className="text-xl font-bold">
                           {experience.title}
                         </h3>
-                        <p className="text-muted-foreground">
+                        <p
+                          className={`text-base ${experience.period.includes("Present") ? "text-primary font-bold text-lg" : "text-foreground font-medium"}`}
+                        >
                           {experience.company}
                         </p>
                       </div>
