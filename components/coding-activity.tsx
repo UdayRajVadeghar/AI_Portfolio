@@ -61,7 +61,7 @@ export default function CodingActivity() {
   const [currentPlatform, setCurrentPlatform] = useState(0);
 
   const GITHUB_USERNAME = "udayrajvadeghar";
-  const CODEFORCES_HANDLE = "udayrajvadeghar";
+  const CODEFORCES_HANDLE = "uday";
   const LEETCODE_USERNAME = "_UdayRaj_";
 
   const platforms = [

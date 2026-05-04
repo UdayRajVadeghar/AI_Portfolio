@@ -23,7 +23,7 @@ export default function Achievements() {
       org: "Codeforces",
       description:
         "Achieved the   Specialist rating on Codeforces through regular participation in contests.",
-      link: "https://codeforces.com/profile/UdayRajVadeghar",
+      link: "https://codeforces.com/profile/uday",
     },
     {
       title: "Meta Hacker Cup - Rank 2103",
